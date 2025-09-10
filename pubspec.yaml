@@ -11,9 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  build: ^3.1.0
+  build: ^2.0.0
   build_config: ^1.1.1
-  source_gen: ^3.1.0
+  source_gen: ^2.0.0
   http: ^1.2.1
   path: ^1.9.0
   csv: ^6.0.0
