@@ -10,7 +10,6 @@ void main() async {
   await EasyLocalization.ensureInitialized();
 
   runApp(EasyLocalization(
-      child: MyApp(),
       supportedLocales: Strings.supportedLocales,
       path: 'assets/langs/langs.csv',
       // fallbackLocale: Locale('en', 'US'),
@@ -23,7 +22,8 @@ void main() async {
       // assetLoader: RootBundleAssetLoader()
       // assetLoader: HttpAssetLoader()
       // assetLoader: FileAssetLoader()
-      assetLoader: CsvAssetLoader()
+      assetLoader: CsvAssetLoader(),
+      child: MyApp()
       // assetLoader: YamlAssetLoader() //multiple files
       // assetLoader: YamlSingleAssetLoader() //single file
       // assetLoader: XmlAssetLoader() //multiple files
@@ -33,6 +33,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -48,12 +50,12 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, this.title}) : super(key: key);
+  const MyHomePage({super.key, this.title});
 
   final String? title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {

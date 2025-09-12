@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -17,24 +17,30 @@ class LocalizationGenerator extends GeneratorForAnnotation<SheetLocalization> {
       'https://docs.google.com/spreadsheets/export?format=csv&id=';
   static const _headers = {
     'Content-Type': 'text/csv; charset=utf-8',
-    'Accept': '*/*'
+    'Accept': '*/*',
   };
 
   @override
   FutureOr<String> generateForAnnotatedElement(
-          Element element, ConstantReader annotation, BuildStep buildStep) =>
-      _generateSource(element, annotation);
+    Element2 element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) => _generateSource(element, annotation);
 
   Future<String> _generateSource(
-      Element element, ConstantReader annotation) async {
+    Element2 element,
+    ConstantReader annotation,
+  ) async {
     final lineSeparator = annotation.read('lineSeparator').stringValue;
     final docId = annotation.read('docId');
     final outputDir = annotation.read('outDir').stringValue;
     final outputFileName = annotation.read('outName').stringValue;
-    final injectGenerationDateTime =
-        annotation.read('injectGenerationDateTime').boolValue;
-    final immediateTranslationEnabled =
-        annotation.read('immediateTranslationEnabled').boolValue;
+    final injectGenerationDateTime = annotation
+        .read('injectGenerationDateTime')
+        .boolValue;
+    final immediateTranslationEnabled = annotation
+        .read('immediateTranslationEnabled')
+        .boolValue;
 
     final preservedKeywords = annotation
         .read('preservedKeywords')
@@ -43,13 +49,15 @@ class LocalizationGenerator extends GeneratorForAnnotation<SheetLocalization> {
         .toList();
     final current = Directory.current;
     final output = Directory.fromUri(Uri.parse(outputDir));
-    final outputPath =
-        Directory(path.join(current.path, output.path, outputFileName));
+    final outputPath = Directory(
+      path.join(current.path, output.path, outputFileName),
+    );
 
     final classBuilder = StringBuffer();
     if (injectGenerationDateTime) {
       classBuilder.writeln(
-          '// Generated at: ${formatDateWithOffset(DateTime.now().toLocal())}');
+        '// Generated at: ${formatDateWithOffset(DateTime.now().toLocal())}',
+      );
     }
 
     classBuilder.writeln('class ${element.displayName.substring(1)}{');
@@ -58,8 +66,12 @@ class LocalizationGenerator extends GeneratorForAnnotation<SheetLocalization> {
       final data = file.readAsStringSync();
       final csvParser = CSVParser(LineSplitter().convert(data).join("\r\n"));
       classBuilder.writeln(csvParser.getSupportedLocales());
-      classBuilder.writeln(csvParser.generateTranslationUsages(
-          preservedKeywords, immediateTranslationEnabled));
+      classBuilder.writeln(
+        csvParser.generateTranslationUsages(
+          preservedKeywords,
+          immediateTranslationEnabled,
+        ),
+      );
     }
 
     if (docId.isNull || docId.stringValue.isEmpty) {
@@ -71,8 +83,10 @@ class LocalizationGenerator extends GeneratorForAnnotation<SheetLocalization> {
 
       readCsv(localFile);
     } else {
-      final response = await http.get(Uri.parse(_urlFormat + docId.stringValue),
-          headers: _headers);
+      final response = await http.get(
+        Uri.parse(_urlFormat + docId.stringValue),
+        headers: _headers,
+      );
       if (response.statusCode != 200) {
         throw Exception('http reasonPhrase: ${response.reasonPhrase}');
       }
@@ -96,8 +110,10 @@ class LocalizationGenerator extends GeneratorForAnnotation<SheetLocalization> {
     return classBuilder.toString();
   }
 
-  String formatDateWithOffset(DateTime date,
-      {String format = 'EEE, dd MMM yyyy HH:mm:ss'}) {
+  String formatDateWithOffset(
+    DateTime date, {
+    String format = 'EEE, dd MMM yyyy HH:mm:ss',
+  }) {
     String twoDigits(int n) => n >= 10 ? "$n" : "0$n";
 
     final hours = twoDigits(date.timeZoneOffset.inHours.abs());
